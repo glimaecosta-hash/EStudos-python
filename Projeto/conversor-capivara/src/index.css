@@ -1,0 +1,32 @@
+/* Reset global - deixa o App.css controlar todo o visual */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: none;
+  text-align: left;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+  font-family: inherit;
+  color: inherit;
+}
