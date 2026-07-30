@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import "./App.css";
 import imgCapivara from "./img/img-removebg-preview.png";
 
-
 const MOEDAS = [
   { codigo: "BRL", bandeira: "🇧🇷", nome: "Real Brasileiro" },
   { codigo: "USD", bandeira: "🇺🇸", nome: "Dólar Americano" },
   { codigo: "EUR", bandeira: "🇪🇺", nome: "Euro" },
   { codigo: "BTC", bandeira: "₿", nome: "Bitcoin" },
 ];
-
 
 function CurrencySelect({ value, onChange, label, id }) {
   return (
@@ -33,7 +31,6 @@ function CurrencySelect({ value, onChange, label, id }) {
     </div>
   );
 }
-
 
 function RateCard({ cotacao, moedaDe, moedaPara, loading, error }) {
   if (loading) {
@@ -78,7 +75,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  
   const handleValorChange = (e) => {
     const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(",", ".");
     setValor(raw);
@@ -110,7 +106,7 @@ function App() {
     setResultado(null);
 
     try {
-      const response = await fetch("http://localhost:5000/converter", {
+      const response = await fetch("/api/converter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ de: moedaDe, para: moedaPara, valor }),
@@ -140,7 +136,6 @@ function App() {
   return (
     <div className="app-container">
       <div className="card-wrapper">
-        
         <div className="left-panel">
           <div className="form-card">
             <h2 className="panel-title">Digite o Valor</h2>
@@ -149,7 +144,6 @@ function App() {
             </p>
 
             <form onSubmit={handleConverter} className="form">
-              
               <div className="form-row">
                 <CurrencySelect
                   id="moeda-de"
