@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import "./App.css";
 import imgCapivara from "./img/img-removebg-preview.png";
 
+// URL base da API hospedada no PythonAnywhere
+const API_BASE_URL = "https://gio789.pythonanywhere.com";
+
 const MOEDAS = [
   { codigo: "BRL", bandeira: "🇧🇷", nome: "Real Brasileiro" },
   { codigo: "USD", bandeira: "🇺🇸", nome: "Dólar Americano" },
@@ -106,7 +109,7 @@ function App() {
     setResultado(null);
 
     try {
-      const response = await fetch("/api/converter", {
+      const response = await fetch(`${API_BASE_URL}/api/converter`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ de: moedaDe, para: moedaPara, valor }),
