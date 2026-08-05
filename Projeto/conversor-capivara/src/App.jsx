@@ -123,7 +123,7 @@ function App() {
           resultado: data.resultado,
           cotacao: data.cotacao,
           mensagem: data.mensagem || null,
-        });
+        }); 
       } else {
         setError(data.erro || "Erro ao realizar a conversão.");
       }
