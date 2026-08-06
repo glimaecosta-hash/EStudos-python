@@ -5,7 +5,30 @@ import traceback
 
 app = Flask(__name__)
 
-CORS(app)
+# ✅ CORS configurado explicitamente para liberar o front no Vercel e qualquer origem
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "*"}},
+    supports_credentials=False,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "OPTIONS"],
+)
+
+
+@app.after_request
+def add_cors_headers(response):
+    """Garante que os headers de CORS sejam enviados em TODAS as respostas,
+    inclusive nas respostas automáticas de preflight (OPTIONS)."""
+    origin = request.headers.get("Origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Max-Age"] = "3600"
+    return response
 
 
 MOEDAS_VALIDAS = {"BRL", "USD", "EUR", "GBP", "ARS", "CAD", "BTC", "JPY", "CNY"}
