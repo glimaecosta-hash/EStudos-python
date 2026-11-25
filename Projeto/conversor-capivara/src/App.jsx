@@ -63,10 +63,6 @@ function RateCard({ cotacao, moedaDe, moedaPara, loading, error }) {
           1 {moedaDe} = <strong>{cotacao}</strong> {moedaPara}
         </span>
       </div>
-      <div className="rate-card-trend">
-        <span className="trend-up">▲ 0,42%</span>
-        <span className="trend-period">nas últimas 24h</span>
-      </div>
     </div>
   );
 }
