@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import "./App.css";
 import imgCapivara from "./img/img-removebg-preview.png";
 
-// URL base da API hospedada no PythonAnywhere
-const API_BASE_URL = "https://gio789.pythonanywhere.com";
+// A API Flask roda no mesmo domínio (pasta api/ na Vercel).
+// Em desenvolvimento, o proxy do Vite repassa /api para o Flask local.
+const API_BASE_URL = "";
 
 const MOEDAS = [
   { codigo: "BRL", bandeira: "🇧🇷", nome: "Real Brasileiro" },

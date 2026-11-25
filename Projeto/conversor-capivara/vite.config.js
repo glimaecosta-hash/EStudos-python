@@ -7,10 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://gio789.pythonanywhere.com",
+        // Flask local: rode `python api/index.py` em outro terminal
+        target: "http://localhost:5000",
         changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
     },
   },
