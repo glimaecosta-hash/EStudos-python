@@ -63,6 +63,20 @@ def cotacao_awesome(de, para):
     return cot_de / cot_para
 
 
+def cotacao_coinbase(de, para):
+    """Reserva com Bitcoin: Coinbase (sem chave; moedas comuns e BTC)."""
+    res = requests.get(
+        "https://api.coinbase.com/v2/exchange-rates",
+        params={"currency": de}, headers=HEADERS, timeout=10,
+    )
+    try:
+        rates = res.json()["data"]["rates"]
+        return float(rates[para])
+    except (ValueError, KeyError, TypeError):
+        print(f"[Coinbase] {de}-{para} falhou: HTTP {res.status_code} - {res.text[:200]}")
+        return None
+
+
 def cotacao_er_api(de, para):
     """Reserva: open.er-api.com (sem chave; não tem BTC)."""
     res = requests.get(f"https://open.er-api.com/v6/latest/{de}", headers=HEADERS, timeout=10)
@@ -106,9 +120,15 @@ def converter():
         })
 
     try:
-        cotacao = cotacao_awesome(de, para)
-        if cotacao is None:
-            cotacao = cotacao_er_api(de, para)
+        # Tenta cada fonte em ordem até uma responder
+        cotacao = None
+        for fonte in (cotacao_awesome, cotacao_coinbase, cotacao_er_api):
+            try:
+                cotacao = fonte(de, para)
+            except requests.exceptions.RequestException as e:
+                print(f"[{fonte.__name__}] erro de rede: {e}")
+            if cotacao is not None:
+                break
         if cotacao is None:
             return jsonify({"erro": f"Não foi possível obter cotação de {de} para {para}."}), 502
 
