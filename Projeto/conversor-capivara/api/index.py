@@ -33,6 +33,45 @@ def add_cors_headers(response):
 
 MOEDAS_VALIDAS = {"BRL", "USD", "EUR", "GBP", "ARS", "CAD", "BTC", "JPY", "CNY"}
 
+HEADERS = {"User-Agent": "Mozilla/5.0 (conversor-capivara)"}
+
+
+def _awesome_bid(de, para):
+    """Busca a cotação de/para na AwesomeAPI. Retorna float ou None."""
+    url = f"https://economia.awesomeapi.com.br/json/last/{de}-{para}"
+    res = requests.get(url, headers=HEADERS, timeout=10)
+    try:
+        dados = res.json()
+    except ValueError:
+        dados = {}
+    chave = f"{de}{para}"
+    if res.status_code == 200 and chave in dados:
+        return float(dados[chave]["bid"])
+    print(f"[AwesomeAPI] {de}-{para} falhou: HTTP {res.status_code} - {res.text[:200]}")
+    return None
+
+
+def cotacao_awesome(de, para):
+    """Tenta o par direto e, se não existir, calcula passando pelo BRL."""
+    direto = _awesome_bid(de, para)
+    if direto is not None:
+        return direto
+    cot_de = 1.0 if de == "BRL" else _awesome_bid(de, "BRL")
+    cot_para = 1.0 if para == "BRL" else _awesome_bid(para, "BRL")
+    if cot_de is None or cot_para is None:
+        return None
+    return cot_de / cot_para
+
+
+def cotacao_er_api(de, para):
+    """Reserva: open.er-api.com (sem chave; não tem BTC)."""
+    res = requests.get(f"https://open.er-api.com/v6/latest/{de}", headers=HEADERS, timeout=10)
+    dados = res.json()
+    if dados.get("result") == "success" and para in dados.get("rates", {}):
+        return float(dados["rates"][para])
+    print(f"[ER-API] {de}-{para} falhou: HTTP {res.status_code} - {res.text[:200]}")
+    return None
+
 # ✅ Adicionada a rota /api/converter
 @app.route('/api/converter', methods=['POST'])
 @app.route('/converter', methods=['POST'])
@@ -67,35 +106,13 @@ def converter():
         })
 
     try:
-        url = f"https://economia.awesomeapi.com.br/json/last/{de}-{para}"
-        res = requests.get(url, timeout=10)
-        dados_api = res.json()
-        chave = f"{de}{para}"
+        cotacao = cotacao_awesome(de, para)
+        if cotacao is None:
+            cotacao = cotacao_er_api(de, para)
+        if cotacao is None:
+            return jsonify({"erro": f"Não foi possível obter cotação de {de} para {para}."}), 502
 
-        if chave in dados_api:
-            cotacao = float(dados_api[chave]["bid"])
-            resultado = valor * cotacao
-        else:
-            cotacao_de, cotacao_para = 1.0, 1.0
-
-            if de != "BRL":
-                url_de = f"https://economia.awesomeapi.com.br/json/last/{de}-BRL"
-                r_de = requests.get(url_de, timeout=10).json()
-                chave_de = f"{de}BRL"
-                if chave_de not in r_de:
-                    return jsonify({"erro": f"Não foi possível obter cotação de {de}."}), 400
-                cotacao_de = float(r_de[chave_de]["bid"])
-
-            if para != "BRL":
-                url_para = f"https://economia.awesomeapi.com.br/json/last/{para}-BRL"
-                r_para = requests.get(url_para, timeout=10).json()
-                chave_para = f"{para}BRL"
-                if chave_para not in r_para:
-                    return jsonify({"erro": f"Não foi possível obter cotação de {para}."}), 400
-                cotacao_para = float(r_para[chave_para]["bid"])
-
-            cotacao = cotacao_de / cotacao_para
-            resultado = (valor * cotacao_de) / cotacao_para
+        resultado = valor * cotacao
 
         return jsonify({
             "de": de,
